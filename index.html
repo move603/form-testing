@@ -1508,6 +1508,7 @@
                 this.menu.querySelector(`[data-value="${value}"]`).classList.add('selected');
 
                 this.close();
+                updateSubmitButton();
             }
             
             filterItems(char) {
@@ -1547,9 +1548,27 @@
             }
         }
         
+        // Function to check if all required fields are filled
+        function checkFormValidity() {
+            const movieName = document.getElementById('movieName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const language = document.getElementById('preferredLanguage').value.trim();
+            const availability = document.getElementById('availability').value.trim();
+            return movieName && email && language && availability;
+        }
+
+        // Function to update submit button state
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = !checkFormValidity();
+        }
+
         // Initialize dropdowns
         const languageDropdown = new CustomDropdown('languageTrigger', 'languageMenu', 'preferredLanguage', 'languageError');
         const availabilityDropdown = new CustomDropdown('availabilityTrigger', 'availabilityMenu', 'availability', 'availabilityError');
+
+        // Initial button state
+        updateSubmitButton();
         
         // Toast Notification System
         function showToast(title, text, type = 'success') {
@@ -1676,14 +1695,17 @@
         // Real-time validation for input fields
         document.getElementById('movieName').addEventListener('input', function() {
             validateField(this, document.getElementById('movieNameError'));
+            updateSubmitButton();
         });
 
         document.getElementById('movieLink').addEventListener('input', function() {
             validateURL(this, document.getElementById('movieLinkError'));
+            updateSubmitButton();
         });
 
         document.getElementById('email').addEventListener('input', function() {
             validateEmail(this, document.getElementById('emailError'));
+            updateSubmitButton();
         });
         
         // Enhanced Movie Search Functionality
