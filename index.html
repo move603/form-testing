@@ -1,86 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contact Us - Pageclip Form</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f4f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .form-container {
-      background: #fff;
-      padding: 2rem 2.5rem;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 100%;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      color: #1e293b;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.3rem;
-      font-weight: 600;
-      color: #334155;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 2px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 1rem;
-      margin-bottom: 1.2rem;
-      transition: border-color 0.3s ease;
-      font-family: inherit;
-    }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 8px #3b82f6aa;
-    }
-    button {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: white;
-      background-color: #2563eb;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #1e40af;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Contact Form with Pageclip</title>
+  <!-- Pageclip CSS (optional but gives loading spinner, etc.) -->
+  <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen">
 </head>
 <body>
-  <div class="form-container">
-    <h1>Contact Us</h1>
-    <!-- Replace PUBLIC_KEY below with your Pageclip public key -->
-    <form action="https://pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/d/forms" method="post">
-      <label for="name">Name *</label>
-      <input type="text" id="name" name="name" placeholder="Your full name" required />
 
-      <label for="email">Email *</label>
-      <input type="email" id="email" name="email" placeholder="you@example.com" required />
+  <h1>Contact Us</h1>
+  <form action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/d" class="pageclip-form" method="post">
+    <label>
+      Name:
+      <input type="text" name="name" required>
+    </label>
+    <br>
+    <label>
+      Email:
+      <input type="email" name="email" required>
+    </label>
+    <br>
+    <label>
+      Message:
+      <textarea name="message" required></textarea>
+    </label>
+    <br>
+    <button class="pageclip-form__submit" type="submit">
+      <span>Send Message</span>
+    </button>
+  </form>
 
-      <label for="message">Message *</label>
-      <textarea id="message" name="message" rows="4" placeholder="Write your message..." required></textarea>
-
-      <button type="submit">Send Message</button>
-    </form>
-  </div>
+  <!-- Pageclip JS -->
+  <script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
 </body>
 </html>
