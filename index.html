@@ -1,34 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Contact Form with Pageclip</title>
-  <!-- Pageclip CSS (optional but gives loading spinner, etc.) -->
-  <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen">
+  <meta charset="UTF-8" />
+  <title>Contact Us - Pageclip Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Pageclip CSS -->
+  <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen" />
+
+  <style>
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .form-wrapper {
+      background: white;
+      padding: 2.5rem 3rem;
+      max-width: 450px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .form-wrapper:hover {
+      box-shadow: 0 15px 45px rgba(0,0,0,0.15);
+    }
+    h1 {
+      margin-bottom: 1.8rem;
+      font-weight: 700;
+      color: #2c3e50;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    form label {
+      display: block;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+      color: #34495e;
+      letter-spacing: 0.02em;
+    }
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      resize: vertical;
+      margin-bottom: 1.5rem;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 8px #2563ebaa;
+    }
+    textarea {
+      min-height: 110px;
+    }
+    button.pageclip-form__submit {
+      background-color: #2563eb;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 0.85rem 0;
+      width: 100%;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      letter-spacing: 0.04em;
+    }
+    button.pageclip-form__submit:hover {
+      background-color: #1e40af;
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      .form-wrapper {
+        padding: 1.5rem 1.8rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="form-wrapper">
+    <h1>Contact Us</h1>
+    <form action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/d" method="post" class="pageclip-form">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required placeholder="Your full name" />
 
-  <h1>Contact Us</h1>
-  <form action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/d" class="pageclip-form" method="post">
-    <label>
-      Name:
-      <input type="text" name="name" required>
-    </label>
-    <br>
-    <label>
-      Email:
-      <input type="email" name="email" required>
-    </label>
-    <br>
-    <label>
-      Message:
-      <textarea name="message" required></textarea>
-    </label>
-    <br>
-    <button class="pageclip-form__submit" type="submit">
-      <span>Send Message</span>
-    </button>
-  </form>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" required placeholder="Write your message here..."></textarea>
+
+      <button class="pageclip-form__submit" type="submit">
+        <span>Send Message</span>
+      </button>
+    </form>
+  </div>
 
   <!-- Pageclip JS -->
   <script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
