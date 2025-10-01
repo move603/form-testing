@@ -1330,7 +1330,7 @@
                         <i class="fas fa-paper-plane"></i>
                         <span>Submit Movie Request</span>
                     </button>
-                    <div id="submitError" class="submit-error" style="display: none;">Please fill in all required fields: Movie Name, Movie Link, Email, Preferred Language, and Current Availability</div>
+                    <div id="submitError" class="submit-error" style="display: none;">Please fill in all required fields: Email, Movie Name, Preferred Language, Current Availability</div>
                 </form>
             </div>
 
@@ -1626,8 +1626,8 @@
             const isLanguageValid = languageDropdown.validate();
             const isAvailabilityValid = availabilityDropdown.validate();
 
-            // Check if mandatory validations passed - ALL must be true
-            if (isMovieNameValid && isMovieLinkValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
+            // Check if mandatory validations passed
+            if (isMovieNameValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
                 const submitBtn = document.getElementById('submitBtn');
                 const originalHTML = submitBtn.innerHTML;
 
@@ -1638,8 +1638,8 @@
                 submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
                 submitBtn.disabled = true;
 
+                // Use Pageclip to submit the form
                 try {
-                    // Use Pageclip to submit the form
                     // Pageclip will handle the form submission
                     // We'll show the success modal after a short delay to simulate submission
                     setTimeout(() => {
@@ -1670,17 +1670,6 @@
             } else {
                 // Show error message near button
                 document.getElementById('submitError').style.display = 'block';
-                
-                // Specifically highlight the dropdown errors if they failed
-                if (!isLanguageValid) {
-                    languageDropdown.showError();
-                }
-                if (!isAvailabilityValid) {
-                    availabilityDropdown.showError();
-                }
-                
-                // Prevent form submission by returning false
-                return false;
             }
         });
         
