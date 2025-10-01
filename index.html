@@ -2,86 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contact Form</title>
-  <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Us - Custom Form</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f8fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7fafc;
       margin: 0;
-      padding: 50px;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
     .container {
-      max-width: 500px;
-      margin: auto;
       background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem 3rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
     }
     h2 {
+      margin-bottom: 1.5rem;
+      color: #2c3e50;
       text-align: center;
-      color: #333;
     }
     label {
-      font-weight: bold;
-      margin-top: 15px;
       display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #34495e;
     }
     input, textarea {
       width: 100%;
-      padding: 12px;
-      margin-top: 5px;
+      padding: 0.65rem 0.75rem;
+      border: 1.8px solid #d1d5db;
       border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+      transition: border-color 0.25s ease;
+      resize: vertical;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus {
+      border-color: #3b82f6;
+      outline: none;
+      box-shadow: 0 0 5px #3b82f6;
     }
     button {
-      background: #28a745;
+      background-color: #3b82f6;
       color: white;
-      font-size: 16px;
-      padding: 12px;
-      width: 100%;
-      margin-top: 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
       border: none;
-      border-radius: 5px;
+      padding: 0.8rem;
+      border-radius: 6px;
+      width: 100%;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
     button:hover {
-      background: #218838;
+      background-color: #2563eb;
     }
-    .pageclip-form__status {
-      margin-top: 15px;
+    .message {
+      margin-top: 1rem;
       text-align: center;
+      font-weight: 600;
+      color: green;
+      display: none;
+    }
+    .error {
+      color: #ef4444;
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Contact Us</h2>
-    <form
-      action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/contact"
-      method="post"
-      class="pageclip-form"
-    >
-      <label for="name">Name</label>
-      <input type="text" name="name" required />
+    <form id="customForm">
+      <label for="name">Name *</label>
+      <input type="text" id="name" name="name" required placeholder="Your full name" />
 
-      <label for="email">Email</label>
-      <input type="email" name="email" required />
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required placeholder="you@example.com" />
 
-      <label for="message">Message</label>
-      <textarea name="message" required></textarea>
+      <label for="message">Message *</label>
+      <textarea id="message" name="message" rows="5" required placeholder="Write your message here..."></textarea>
 
-      <button type="submit" class="pageclip-form__submit">
-        <span>Send Message</span>
-      </button>
-
-      <div class="pageclip-form__status"></div>
+      <button type="submit">Send Message</button>
     </form>
+    <p class="message" id="successMessage">Thank you! Your message has been sent.</p>
+    <p class="error" id="errorMessage">Oops! Something went wrong. Please try again later.</p>
   </div>
 
-  <script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
+  <script>
+    // Config - replace these with your own values:
+    const PAGECLIP_KEY = 'CMqDFFZAeauKghB8ripn3ej1LokMWVbO/d';  // Your Pageclip public key
+    const WEBHOOK_URL = 'https://your-server.com/webhook?token=nMV1E3x0fmP6RznSgZAcaN7APoUBdFLR'; // Your forwarding server webhook URL
+
+    const form = document.getElementById('customForm');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      successMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+
+      // Gather form data
+      const formData = new FormData(form);
+      
+      try {
+        // 1) Submit to Pageclip (store form data)
+        const pageclipRes = await fetch(`https://pageclip.co/${PAGECLIP_KEY}/forms`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!pageclipRes.ok) throw new Error('Pageclip submission failed');
+
+        // 2) Submit the same data to your backend webhook to forward to Slack
+        // Convert FormData to JSON object
+        const jsonPayload = {};
+        formData.forEach((value, key) => {
+          jsonPayload[key] = value;
+        });
+
+        const webhookRes = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonPayload),
+        });
+
+        if (!webhookRes.ok) throw new Error('Webhook forwarding failed');
+
+        // Show success message
+        successMessage.style.display = 'block';
+        form.reset();
+      } catch (error) {
+        console.error('Error submitting form:', error);
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
