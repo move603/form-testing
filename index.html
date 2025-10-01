@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Request Portal - Premium Film Submission</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Pageclip CSS -->
-    <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
@@ -658,10 +656,6 @@
             box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
             position: relative;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
         }
         
         .submit-btn::before {
@@ -685,26 +679,13 @@
         }
         
         .submit-btn:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
         
-        .submit-btn .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        .submit-error {
-            color: #ef4444;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            text-align: center;
+        .submit-btn:disabled:hover::before {
+            left: -100%;
         }
         
         /* Info Panel */
@@ -948,6 +929,17 @@
             color: rgba(255, 255, 255, 0.7);
         }
         
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
         /* Responsive Design */
         @media (max-width: 1024px) {
             .main-content {
@@ -1069,7 +1061,6 @@
                     <button class="search-option" data-source="omdb">OMDB</button>
                     <button class="search-option" data-source="google">Google</button>
                     <button class="search-option" data-source="youtube">YouTube</button>
-                    <button class="search-option" data-source="wikipedia">Wikipedia</button>
                 </div>
             </div>
             <div class="search-box">
@@ -1156,12 +1147,13 @@
                     <p class="form-subtitle">Help us grow our library by suggesting films you'd love to watch</p>
                 </div>
 
-                <form action="https://api.web3forms.com/submit" method="POST" id="movieRequestForm" novalidate>
+                <form action="https://api.web3forms.com/submit" method="POST" id="movieRequestForm">
                     <!-- Web3Forms Access Key (Replace with your own) -->
                     <input type="hidden" name="access_key" value="0c9d844d-d807-4661-9f5d-f0bb8d8d8418">
                     <input type="hidden" name="subject" value="New Movie Request Submission">
                     <input type="hidden" name="from_name" value="CineRequest Portal">
 
+                    
                     <div class="form-group">
                         <label for="movieName" class="form-label">
                             <i class="fas fa-video label-icon"></i>
@@ -1332,10 +1324,8 @@
                     </div>
 
                     <button type="submit" class="submit-btn" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>Submit Movie Request</span>
+                        <i class="fas fa-paper-plane"></i> Submit Movie Request
                     </button>
-                    <div id="submitError" class="submit-error" style="display: none;">Please fill in all required fields: Email, Movie Name, Preferred Language, Current Availability</div>
                 </form>
             </div>
 
@@ -1436,8 +1426,6 @@
         </div>
     </div>
 
-
-
     <script>
         // Custom Dropdown Functionality
         class CustomDropdown {
@@ -1447,7 +1435,8 @@
                 this.input = document.getElementById(inputId);
                 this.errorElement = document.getElementById(errorId);
                 this.isOpen = false;
-
+                this.selectedValue = '';
+                
                 this.init();
             }
             
@@ -1498,20 +1487,23 @@
             }
             
             select(value, text) {
+                this.selectedValue = value;
                 this.input.value = value;
                 this.trigger.querySelector('span').textContent = text;
                 this.trigger.classList.add('has-value');
-
+                
                 // Clear error state when a value is selected
                 this.clearError();
-
+                
                 // Update selected state
                 this.menu.querySelectorAll('.dropdown-item').forEach(item => {
                     item.classList.remove('selected');
                 });
                 this.menu.querySelector(`[data-value="${value}"]`).classList.add('selected');
-
+                
                 this.close();
+                
+                // Update submit button state
                 updateSubmitButton();
             }
             
@@ -1543,7 +1535,7 @@
             }
             
             validate() {
-                if (!this.input.value.trim()) {
+                if (!this.selectedValue) {
                     this.showError();
                     return false;
                 }
@@ -1559,6 +1551,7 @@
             const email = document.getElementById('email').value.trim();
             const language = document.getElementById('preferredLanguage').value.trim();
             const availability = document.getElementById('availability').value.trim();
+            
             return movieName && movieLink && email && language && availability;
         }
 
@@ -1567,7 +1560,7 @@
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = !checkFormValidity();
         }
-
+        
         // Initialize dropdowns
         const languageDropdown = new CustomDropdown('languageTrigger', 'languageMenu', 'preferredLanguage', 'languageError');
         const availabilityDropdown = new CustomDropdown('availabilityTrigger', 'availabilityMenu', 'availability', 'availabilityError');
@@ -1749,7 +1742,7 @@
             if (query.length > 2) {
                 searchTimeout = setTimeout(() => {
                     performSearch();
-                }, 300); // Reduced from 500ms to 300ms for faster response
+                }, 500);
             } else if (query.length === 0) {
                 resetSearchResults();
             }
@@ -1771,7 +1764,6 @@
             `;
         }
         
-        // Optimized search function with faster response
         async function performSearch() {
             const query = document.getElementById('movieSearchInput').value.trim();
             if (!query) {
@@ -1788,16 +1780,7 @@
             `;
             
             try {
-                // Set a timeout for the entire search process
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Search timeout')), 5000)
-                );
-                
-                const results = await Promise.race([
-                    searchMovies(query),
-                    timeoutPromise
-                ]);
-                
+                const results = await searchMovies(query);
                 displaySearchResults(results, query);
             } catch (error) {
                 console.error('Search error:', error);
@@ -1810,7 +1793,6 @@
             }
         }
         
-        // Optimized search function with faster API calls
         async function searchMovies(query) {
             const results = [];
             
@@ -1820,183 +1802,119 @@
             const ratingFilter = document.getElementById('ratingFilter').value;
             const sortFilter = document.getElementById('sortFilter').value;
             
-            // Create an array of promises for all API calls
-            const searchPromises = [];
-            
-            // OMDB API Search - Fast search with basic info only
+            // OMDB API Search
             if (currentSource === 'all' || currentSource === 'omdb') {
-                searchPromises.push(
-                    fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.Search) {
-                                data.Search.slice(0, 5).forEach(movie => {
-                                    results.push({
-                                        title: movie.Title,
-                                        year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
-                                        source: 'OMDB',
-                                        description: `Click to view details on OMDB`,
-                                        url: `https://www.imdb.com/title/${movie.imdbID}`,
-                                        poster: movie.Poster !== 'N/A' ? movie.Poster : null,
-                                        rating: 'N/A',
-                                        genre: 'Various',
-                                        type: 'movie'
-                                    });
-                                });
+                try {
+                    // Note: You need to replace YOUR_OMDB_API_KEY with an actual API key
+                    const omdbResponse = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`);
+                    const omdbData = await omdbResponse.json();
+                    
+                    if (omdbData.Search) {
+                        omdbData.Search.slice(0, 5).forEach(movie => {
+                            // Extract release date from OMDB data
+                            let releaseDate = '';
+                            if (movie.Year && movie.Year !== 'N/A') {
+                                // Convert year to date format (YYYY-MM-DD)
+                                const year = movie.Year.replace(/[^0-9]/g, '').substring(0, 4);
+                                if (year.length === 4) {
+                                    releaseDate = `${year}-01-01`; // Use January 1st as default
+                                }
                             }
-                        })
-                        .catch(e => console.log('OMDB search failed'))
-                );
+                            
+                            results.push({
+                                title: movie.Title,
+                                year: movie.Year,
+                                source: 'OMDB',
+                                description: `Click to view details on OMDB`,
+                                url: `https://www.imdb.com/title/${movie.imdbID}`,
+                                poster: movie.Poster !== 'N/A' ? movie.Poster : null,
+                                rating: movie.imdbRating || 'N/A',
+                                genre: movie.Genre || 'Unknown',
+                                type: movie.Type || 'movie',
+                                releaseDate: releaseDate
+                            });
+                        });
+                    }
+                } catch (e) {
+                    console.log('OMDB search failed');
+                }
             }
             
             // TMDB API Search
             if (currentSource === 'all' || currentSource === 'tmdb') {
-                searchPromises.push(
-                    fetch(`https://api.themoviedb.org/3/search/movie?api_key=d6666ebf15b5585a27c2c33079d8fc4c&query=${encodeURIComponent(query)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.results) {
-                                data.results.slice(0, 5).forEach(movie => {
-                                    const releaseYear = movie.release_date ? new Date(movie.release_date).getFullYear() : 'No year found';
-                                    results.push({
-                                        title: movie.title,
-                                        year: releaseYear,
-                                        source: 'TMDB',
-                                        description: movie.overview ? (movie.overview.substring(0, 100) + '...') : 'No description available',
-                                        url: `https://www.themoviedb.org/movie/${movie.id}`,
-                                        poster: movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : null,
-                                        rating: movie.vote_average ? `${movie.vote_average}/10` : 'N/A',
-                                        genre: movie.genre_ids ? 'Various' : 'Unknown',
-                                        type: 'movie',
-                                        releaseDate: movie.release_date || null
-                                    });
-                                });
-                            }
-                        })
-                        .catch(e => console.log('TMDB search failed'))
-                );
+                try {
+                    // Note: You need to replace YOUR_TMDB_API_KEY with an actual API key
+                    const tmdbResponse = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=d6666ebf15b5585a27c2c33079d8fc4c&query=${encodeURIComponent(query)}`);
+                    const tmdbData = await tmdbResponse.json();
+                    
+                    if (tmdbData.results) {
+                        tmdbData.results.slice(0, 5).forEach(movie => {
+                            results.push({
+                                title: movie.title,
+                                year: new Date(movie.release_date).getFullYear(),
+                                source: 'TMDB',
+                                description: movie.overview ? (movie.overview.substring(0, 100) + '...') : 'No description available',
+                                url: `https://www.themoviedb.org/movie/${movie.id}`,
+                                poster: movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : null,
+                                rating: movie.vote_average ? `${movie.vote_average}/10` : 'N/A',
+                                genre: 'Various', // Would need genre API call for details
+                                type: 'movie',
+                                releaseDate: movie.release_date || ''
+                            });
+                        });
+                    }
+                } catch (e) {
+                    console.log('TMDB search failed');
+                }
             }
             
-            // IMDb Search - Using OMDB for faster results
+            // IMDb Search (simulated)
             if (currentSource === 'all' || currentSource === 'imdb') {
-                searchPromises.push(
-                    fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.Search) {
-                                data.Search.slice(0, 5).forEach(movie => {
-                                    results.push({
-                                        title: movie.Title,
-                                        year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
-                                        source: 'IMDb',
-                                        description: `Find comprehensive information about ${movie.Title} on IMDb`,
-                                        url: `https://www.imdb.com/title/${movie.imdbID}`,
-                                        poster: movie.Poster !== 'N/A' ? movie.Poster : null,
-                                        rating: 'IMDb Database',
-                                        genre: 'Various',
-                                        type: 'movie'
-                                    });
-                                });
-                            }
-                        })
-                        .catch(e => console.log('IMDb search failed'))
-                );
+                results.push({
+                    title: `${query} - IMDb Search`,
+                    year: '2023',
+                    source: 'IMDb',
+                    description: `Find comprehensive information about ${query} on IMDb`,
+                    url: `https://www.imdb.com/find?q=${encodeURIComponent(query)}`,
+                    poster: null,
+                    rating: 'IMDb Database',
+                    genre: 'Various',
+                    type: 'search',
+                    releaseDate: ''
+                });
             }
             
-            // Google Search - Using Wikipedia API for faster results
+            // Google Search
             if (currentSource === 'all' || currentSource === 'google') {
-                searchPromises.push(
-                    fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' film')}&format=json&origin=*`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.query && data.query.search) {
-                                data.query.search.slice(0, 5).forEach(result => {
-                                    // Try to extract year from title or snippet
-                                    let year = 'No year found';
-                                    const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
-                                    if (yearMatch) {
-                                        year = yearMatch[0];
-                                    }
-                                    
-                                    results.push({
-                                        title: result.title,
-                                        year: year,
-                                        source: 'Google',
-                                        description: result.snippet.substring(0, 100) + '...',
-                                        url: `https://www.google.com/search?q=${encodeURIComponent(result.title + ' movie')}`,
-                                        poster: null,
-                                        rating: 'Multiple sources',
-                                        genre: 'Various',
-                                        type: 'search'
-                                    });
-                                });
-                            }
-                        })
-                        .catch(e => console.log('Google search failed'))
-                );
+                results.push({
+                    title: `${query} - Google Search`,
+                    year: '2023',
+                    source: 'Google',
+                    description: `Find comprehensive information about ${query} from across the web`,
+                    url: `https://www.google.com/search?q=${encodeURIComponent(query + ' movie')}`,
+                    poster: null,
+                    rating: 'Multiple sources',
+                    genre: 'Various',
+                    type: 'search',
+                    releaseDate: ''
+                });
             }
             
-            // YouTube Search - Using OMDB for faster results
+            // YouTube Search
             if (currentSource === 'all' || currentSource === 'youtube') {
-                searchPromises.push(
-                    fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.Search) {
-                                data.Search.slice(0, 5).forEach(movie => {
-                                    results.push({
-                                        title: `${movie.Title} - Official Trailer`,
-                                        year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
-                                        source: 'YouTube',
-                                        description: `Watch the official trailer and related videos for ${movie.Title}`,
-                                        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title + ' trailer')}`,
-                                        poster: movie.Poster !== 'N/A' ? movie.Poster : null,
-                                        rating: 'Video content',
-                                        genre: 'Various',
-                                        type: 'video'
-                                    });
-                                });
-                            }
-                        })
-                        .catch(e => console.log('YouTube search failed'))
-                );
+                results.push({
+                    title: `${query} - Official Trailer`,
+                    year: '2023',
+                    source: 'YouTube',
+                    description: `Watch the official trailer and related videos for ${query}`,
+                    url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query + ' trailer')}`,
+                    poster: null,
+                    rating: 'Video content',
+                    genre: 'Various',
+                    type: 'video',
+                    releaseDate: ''
+                });
             }
-            
-            // Wikipedia Search - Direct Wikipedia API
-            if (currentSource === 'all' || currentSource === 'wikipedia') {
-                searchPromises.push(
-                    fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' film')}&format=json&origin=*`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.query && data.query.search) {
-                                data.query.search.slice(0, 5).forEach(result => {
-                                    // Try to extract year from title or snippet
-                                    let year = 'No year found';
-                                    const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
-                                    if (yearMatch) {
-                                        year = yearMatch[0];
-                                    }
-                                    
-                                    results.push({
-                                        title: result.title,
-                                        year: year,
-                                        source: 'Wikipedia',
-                                        description: result.snippet.substring(0, 100) + '...',
-                                        url: `https://en.wikipedia.org/?curid=${result.pageid}`,
-                                        poster: null,
-                                        rating: 'N/A',
-                                        genre: 'Various',
-                                        type: 'article'
-                                    });
-                                });
-                            }
-                        })
-                        .catch(e => console.log('Wikipedia search failed'))
-                );
-            }
-            
-            // Wait for all API calls to complete
-            await Promise.allSettled(searchPromises);
             
             // Apply filters
             let filteredResults = results.filter(result => {
@@ -2010,9 +1928,7 @@
                     if (yearFilter.includes('-')) {
                         // Handle decade ranges like "2010-2019"
                         const [start, end] = yearFilter.split('-').map(Number);
-                        if (result.year === 'No year found') return false;
-                        const resultYear = parseInt(result.year);
-                        if (resultYear < start || resultYear > end) {
+                        if (result.year < start || result.year > end) {
                             return false;
                         }
                     } else {
@@ -2043,19 +1959,9 @@
         function sortResults(results, sortType) {
             switch(sortType) {
                 case 'year-desc':
-                    return results.sort((a, b) => {
-                        // Handle "No year found" by putting them at the end
-                        if (a.year === 'No year found') return 1;
-                        if (b.year === 'No year found') return -1;
-                        return parseInt(b.year) - parseInt(a.year);
-                    });
+                    return results.sort((a, b) => parseInt(b.year) - parseInt(a.year));
                 case 'year-asc':
-                    return results.sort((a, b) => {
-                        // Handle "No year found" by putting them at the end
-                        if (a.year === 'No year found') return 1;
-                        if (b.year === 'No year found') return -1;
-                        return parseInt(a.year) - parseInt(b.year);
-                    });
+                    return results.sort((a, b) => parseInt(a.year) - parseInt(b.year));
                 case 'rating':
                     return results.sort((a, b) => {
                         // Handle non-numeric ratings
@@ -2137,16 +2043,21 @@
                     // Auto-fill the form with the selected movie
                     document.getElementById('movieName').value = results[index].title;
                     document.getElementById('movieLink').value = results[index].url;
+                    
+                    // Auto-fill release date if available
                     if (results[index].releaseDate) {
                         document.getElementById('releaseDate').value = results[index].releaseDate;
                     }
-
+                    
                     // Scroll to form
-                    document.querySelector('.form-container').scrollIntoView({
-                        behavior: 'smooth'
+                    document.querySelector('.form-container').scrollIntoView({ 
+                        behavior: 'smooth' 
                     });
-
+                    
                     showToast('Success', 'Movie details filled in the form', 'success');
+                    
+                    // Update submit button state
+                    updateSubmitButton();
                 });
             });
         }
