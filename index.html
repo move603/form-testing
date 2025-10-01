@@ -1443,8 +1443,7 @@
                 this.input = document.getElementById(inputId);
                 this.errorElement = document.getElementById(errorId);
                 this.isOpen = false;
-                this.selectedValue = '';
-                
+
                 this.init();
             }
             
@@ -1495,7 +1494,6 @@
             }
             
             select(value, text) {
-                this.selectedValue = value;
                 this.input.value = value;
                 this.trigger.querySelector('span').textContent = text;
                 this.trigger.classList.add('has-value');
@@ -1540,7 +1538,7 @@
             }
             
             validate() {
-                if (!this.selectedValue) {
+                if (!this.input.value.trim()) {
                     this.showError();
                     return false;
                 }
