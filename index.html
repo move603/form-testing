@@ -1330,7 +1330,7 @@
                         <i class="fas fa-paper-plane"></i>
                         <span>Submit Movie Request</span>
                     </button>
-                    <div id="submitError" class="submit-error" style="display: none;">Please fill in all required fields: Email, Movie Name, Preferred Language, Current Availability</div>
+                    <div id="submitError" class="submit-error" style="display: none;">Please fill in all required fields: Movie Name, Movie Link, Email, Preferred Language, and Current Availability</div>
                 </form>
             </div>
 
@@ -1508,7 +1508,6 @@
                 this.menu.querySelector(`[data-value="${value}"]`).classList.add('selected');
 
                 this.close();
-                updateSubmitButton();
             }
             
             filterItems(char) {
@@ -1548,27 +1547,9 @@
             }
         }
         
-        // Function to check if all required fields are filled
-        function checkFormValidity() {
-            const movieName = document.getElementById('movieName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const language = document.getElementById('preferredLanguage').value.trim();
-            const availability = document.getElementById('availability').value.trim();
-            return movieName && email && language && availability;
-        }
-
-        // Function to update submit button state
-        function updateSubmitButton() {
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = !checkFormValidity();
-        }
-
         // Initialize dropdowns
         const languageDropdown = new CustomDropdown('languageTrigger', 'languageMenu', 'preferredLanguage', 'languageError');
         const availabilityDropdown = new CustomDropdown('availabilityTrigger', 'availabilityMenu', 'availability', 'availabilityError');
-
-        // Initial button state
-        updateSubmitButton();
         
         // Toast Notification System
         function showToast(title, text, type = 'success') {
@@ -1645,8 +1626,8 @@
             const isLanguageValid = languageDropdown.validate();
             const isAvailabilityValid = availabilityDropdown.validate();
 
-            // Check if mandatory validations passed
-            if (isMovieNameValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
+            // Check if mandatory validations passed - ALL must be true
+            if (isMovieNameValid && isMovieLinkValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
                 const submitBtn = document.getElementById('submitBtn');
                 const originalHTML = submitBtn.innerHTML;
 
@@ -1657,8 +1638,8 @@
                 submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
                 submitBtn.disabled = true;
 
-                // Use Pageclip to submit the form
                 try {
+                    // Use Pageclip to submit the form
                     // Pageclip will handle the form submission
                     // We'll show the success modal after a short delay to simulate submission
                     setTimeout(() => {
@@ -1689,23 +1670,31 @@
             } else {
                 // Show error message near button
                 document.getElementById('submitError').style.display = 'block';
+                
+                // Specifically highlight the dropdown errors if they failed
+                if (!isLanguageValid) {
+                    languageDropdown.showError();
+                }
+                if (!isAvailabilityValid) {
+                    availabilityDropdown.showError();
+                }
+                
+                // Prevent form submission by returning false
+                return false;
             }
         });
         
         // Real-time validation for input fields
         document.getElementById('movieName').addEventListener('input', function() {
             validateField(this, document.getElementById('movieNameError'));
-            updateSubmitButton();
         });
 
         document.getElementById('movieLink').addEventListener('input', function() {
             validateURL(this, document.getElementById('movieLinkError'));
-            updateSubmitButton();
         });
 
         document.getElementById('email').addEventListener('input', function() {
             validateEmail(this, document.getElementById('emailError'));
-            updateSubmitButton();
         });
         
         // Enhanced Movie Search Functionality
