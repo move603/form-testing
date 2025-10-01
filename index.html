@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Request Portal - Premium Film Submission</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Pageclip CSS -->
     <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -1141,6 +1140,7 @@
                 </div>
 
                 <form action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/newform" class="pageclip-form" method="post" id="movieRequestForm">
+                    
                     <div class="form-group">
                         <label for="movieName" class="form-label">
                             <i class="fas fa-video label-icon"></i>
@@ -1311,8 +1311,7 @@
                     </div>
 
                     <button type="submit" class="submit-btn pageclip-form__submit" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i> 
-                        <span>Submit Movie Request</span>
+                        <span><i class="fas fa-paper-plane"></i> Submit Movie Request</span>
                     </button>
                 </form>
             </div>
@@ -1414,9 +1413,7 @@
         </div>
     </div>
 
-    <!-- Pageclip JavaScript -->
     <script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
-
     <script>
         // Custom Dropdown Functionality
         class CustomDropdown {
@@ -1601,7 +1598,7 @@
         }
         
         // Form validation and submission
-        document.getElementById('movieRequestForm').addEventListener('submit', async function(e) {
+        document.getElementById('movieRequestForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             // Validate all required fields
@@ -1613,43 +1610,43 @@
 
             // Check if all validations passed
             if (isMovieNameValid && isMovieLinkValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
+                // Show loading state
                 const submitBtn = document.getElementById('submitBtn');
                 const originalText = submitBtn.innerHTML;
-
-                // Show loading state
                 submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
                 submitBtn.disabled = true;
-
-                // Pageclip will handle the form submission
-                // The form will be submitted via Pageclip's JavaScript
-                // We'll show the success modal after the form is submitted
-                // Note: Pageclip handles the form submission and provides feedback
                 
-                // Since Pageclip handles the submission, we'll just show the success modal
-                // In a real implementation, you might want to use Pageclip's success callback
-                // For now, we'll simulate a successful submission
-                
-                setTimeout(() => {
-                    // Show success modal
-                    document.getElementById('thankYouModal').classList.add('show');
+                // Use Pageclip's submit method instead of form.submit()
+                Pageclip.submit(this, {
+                    successCallback: function(response) {
+                        // Reset button
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        
+                        // Show success modal
+                        document.getElementById('thankYouModal').classList.add('show');
 
-                    // Countdown timer
-                    let countdown = 3;
-                    const countdownEl = document.getElementById('countdown');
-                    const timer = setInterval(() => {
-                        countdown--;
-                        countdownEl.textContent = countdown;
-                        if (countdown <= 0) {
-                            clearInterval(timer);
-                            // Redirect to YouTube
-                            window.location.href = 'https://www.youtube.com/';
-                        }
-                    }, 1000);
-                    
-                    // Reset button
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }, 1500);
+                        // Countdown timer
+                        let countdown = 3;
+                        const countdownEl = document.getElementById('countdown');
+                        const timer = setInterval(() => {
+                            countdown--;
+                            countdownEl.textContent = countdown;
+                            if (countdown <= 0) {
+                                clearInterval(timer);
+                                // Redirect to YouTube
+                                window.location.href = 'https://www.youtube.com/';
+                            }
+                        }, 1000);
+                    },
+                    errorCallback: function(error) {
+                        // Reset button
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        
+                        showToast('Error', 'Failed to submit form. Please try again.', 'error');
+                    }
+                });
             } else {
                 showToast('Validation Error', 'Please fill in all required fields correctly', 'error');
             }
@@ -1751,7 +1748,6 @@
             }
         }
         
-        // Enhanced search function with accurate release years
         async function searchMovies(query) {
             const results = [];
             
@@ -1761,41 +1757,33 @@
             const ratingFilter = document.getElementById('ratingFilter').value;
             const sortFilter = document.getElementById('sortFilter').value;
             
-            // OMDB API Search - Provides accurate release years
+            // OMDB API Search
             if (currentSource === 'all' || currentSource === 'omdb') {
                 try {
                     const omdbResponse = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`);
                     const omdbData = await omdbResponse.json();
                     
                     if (omdbData.Search) {
-                        // Get detailed information for each movie to ensure accurate year
-                        for (const movie of omdbData.Search.slice(0, 5)) {
-                            try {
-                                const detailResponse = await fetch(`https://www.omdbapi.com/?i=${movie.imdbID}&apikey=24b81b6a`);
-                                const detailData = await detailResponse.json();
-                                
-                                results.push({
-                                    title: detailData.Title,
-                                    year: detailData.Year !== 'N/A' ? detailData.Year : 'No year found',
-                                    source: 'OMDB',
-                                    description: detailData.Plot !== 'N/A' ? (detailData.Plot.substring(0, 100) + '...') : 'No description available',
-                                    url: `https://www.imdb.com/title/${movie.imdbID}`,
-                                    poster: detailData.Poster !== 'N/A' ? detailData.Poster : null,
-                                    rating: detailData.imdbRating !== 'N/A' ? detailData.imdbRating : 'N/A',
-                                    genre: detailData.Genre !== 'N/A' ? detailData.Genre : 'Unknown',
-                                    type: detailData.Type || 'movie'
-                                });
-                            } catch (e) {
-                                console.log('Failed to get detailed OMDB info for', movie.Title);
-                            }
-                        }
+                        omdbData.Search.slice(0, 5).forEach(movie => {
+                            results.push({
+                                title: movie.Title,
+                                year: movie.Year,
+                                source: 'OMDB',
+                                description: `Click to view details on OMDB`,
+                                url: `https://www.imdb.com/title/${movie.imdbID}`,
+                                poster: movie.Poster !== 'N/A' ? movie.Poster : null,
+                                rating: movie.imdbRating || 'N/A',
+                                genre: movie.Genre || 'Unknown',
+                                type: movie.Type || 'movie'
+                            });
+                        });
                     }
                 } catch (e) {
                     console.log('OMDB search failed');
                 }
             }
             
-            // TMDB API Search - Provides accurate release years
+            // TMDB API Search
             if (currentSource === 'all' || currentSource === 'tmdb') {
                 try {
                     const tmdbResponse = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=d6666ebf15b5585a27c2c33079d8fc4c&query=${encodeURIComponent(query)}`);
@@ -1803,16 +1791,15 @@
                     
                     if (tmdbData.results) {
                         tmdbData.results.slice(0, 5).forEach(movie => {
-                            const releaseYear = movie.release_date ? new Date(movie.release_date).getFullYear() : 'No year found';
                             results.push({
                                 title: movie.title,
-                                year: releaseYear,
+                                year: new Date(movie.release_date).getFullYear(),
                                 source: 'TMDB',
                                 description: movie.overview ? (movie.overview.substring(0, 100) + '...') : 'No description available',
                                 url: `https://www.themoviedb.org/movie/${movie.id}`,
                                 poster: movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : null,
                                 rating: movie.vote_average ? `${movie.vote_average}/10` : 'N/A',
-                                genre: movie.genre_ids ? 'Various' : 'Unknown',
+                                genre: 'Various', // Would need genre API call for details
                                 type: 'movie'
                             });
                         });
@@ -1822,140 +1809,197 @@
                 }
             }
             
-            // IMDb Search - Using OMDB for accurate data
+            // Enhanced IMDb Search - Get actual movie data with years
             if (currentSource === 'all' || currentSource === 'imdb') {
                 try {
-                    const imdbResponse = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`);
-                    const imdbData = await imdbResponse.json();
+                    // First get search results
+                    const imdbSearchResponse = await fetch(`https://v2.sg.media-imdb.com/suggests/${query.charAt(0).toLowerCase()}/${encodeURIComponent(query)}.json`);
+                    const imdbSearchText = await imdbSearchResponse.text();
                     
-                    if (imdbData.Search) {
-                        imdbData.Search.slice(0, 5).forEach(movie => {
-                            results.push({
-                                title: movie.Title,
-                                year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
-                                source: 'IMDb',
-                                description: `Find comprehensive information about ${movie.Title} on IMDb`,
-                                url: `https://www.imdb.com/title/${movie.imdbID}`,
-                                poster: movie.Poster !== 'N/A' ? movie.Poster : null,
-                                rating: 'IMDb Database',
-                                genre: 'Various',
-                                type: 'movie'
-                            });
-                        });
-                    }
-                } catch (e) {
-                    console.log('IMDb search failed');
-                }
-            }
-            
-            // Google Search - Using Wikipedia API for accurate data
-            if (currentSource === 'all' || currentSource === 'google') {
-                try {
-                    // Use Wikipedia API for Google search results
-                    const wikiResponse = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' film')}&format=json&origin=*`);
-                    const wikiData = await wikiResponse.json();
+                    // Extract JSON from the response (IMDb returns a JSONP format)
+                    const jsonStart = imdbSearchText.indexOf('(') + 1;
+                    const jsonEnd = imdbSearchText.lastIndexOf(')');
+                    const imdbData = JSON.parse(imdbSearchText.substring(jsonStart, jsonEnd));
                     
-                    if (wikiData.query && wikiData.query.search) {
-                        // Get detailed information for top 5 results
-                        for (const result of wikiData.query.search.slice(0, 5)) {
-                            try {
-                                const pageResponse = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&exintro&explaintext&pithumbsize=300&pageids=${result.pageid}&format=json&origin=*`);
-                                const pageData = await pageResponse.json();
-                                const page = pageData.query.pages[result.pageid];
+                    if (imdbData.d) {
+                        imdbData.d.slice(0, 5).forEach(item => {
+                            // Only include movies/series, not people
+                            if (item.qid === 'feature' || item.qid === 'tv_series') {
+                                // Extract year from the description or use the 'y' field if available
+                                let year = item.y || 'No year found';
                                 
-                                // Try to extract year from title or snippet
-                                let year = 'No year found';
-                                const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
-                                if (yearMatch) {
-                                    year = yearMatch[0];
+                                // If year is not directly available, try to extract from description
+                                if (year === 'No year found' && item.s) {
+                                    const yearMatch = item.s.match(/\((\d{4})\)/);
+                                    if (yearMatch) {
+                                        year = yearMatch[1];
+                                    }
                                 }
                                 
                                 results.push({
-                                    title: result.title,
+                                    title: item.l,
                                     year: year,
-                                    source: 'Google',
-                                    description: page.extract ? (page.extract.substring(0, 100) + '...') : (result.snippet.substring(0, 100) + '...'),
-                                    url: `https://www.google.com/search?q=${encodeURIComponent(result.title + ' movie')}`,
-                                    poster: page.thumbnail ? page.thumbnail.source : null,
-                                    rating: 'Multiple sources',
+                                    source: 'IMDb',
+                                    description: item.s ? (item.s.substring(0, 100) + '...') : 'No description available',
+                                    url: `https://www.imdb.com/title/${item.id}`,
+                                    poster: item.i ? item.i.imageUrl : null,
+                                    rating: 'IMDb Database',
                                     genre: 'Various',
-                                    type: 'search'
+                                    type: item.qid === 'feature' ? 'movie' : 'series'
                                 });
-                            } catch (e) {
-                                console.log('Failed to get detailed Wikipedia info for', result.title);
                             }
-                        }
-                    }
-                } catch (e) {
-                    console.log('Google search failed');
-                }
-            }
-            
-            // YouTube Search - Using OMDB for accurate movie data
-            if (currentSource === 'all' || currentSource === 'youtube') {
-                try {
-                    const ytResponse = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=24b81b6a`);
-                    const ytData = await ytResponse.json();
-                    
-                    if (ytData.Search) {
-                        ytData.Search.slice(0, 5).forEach(movie => {
-                            results.push({
-                                title: `${movie.Title} - Official Trailer`,
-                                year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
-                                source: 'YouTube',
-                                description: `Watch the official trailer and related videos for ${movie.Title}`,
-                                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title + ' trailer')}`,
-                                poster: movie.Poster !== 'N/A' ? movie.Poster : null,
-                                rating: 'Video content',
-                                genre: 'Various',
-                                type: 'video'
-                            });
                         });
                     }
                 } catch (e) {
-                    console.log('YouTube search failed');
+                    console.log('IMDb search failed, using fallback');
+                    // Fallback to search page link
+                    results.push({
+                        title: `${query} - IMDb Search`,
+                        year: 'Search IMDb',
+                        source: 'IMDb',
+                        description: `Find comprehensive information about ${query} on IMDb`,
+                        url: `https://www.imdb.com/find?q=${encodeURIComponent(query)}`,
+                        poster: null,
+                        rating: 'IMDb Database',
+                        genre: 'Various',
+                        type: 'search'
+                    });
                 }
             }
             
-            // Wikipedia Search - Direct Wikipedia API
+            // Simplified Google Search - Using a more reliable approach
+            if (currentSource === 'all' || currentSource === 'google') {
+                // Create mock results for Google since direct scraping is unreliable
+                const mockGoogleResults = [
+                    { title: `${query} (2023) - Official Trailer`, year: '2023', description: `Watch the official trailer for ${query}` },
+                    { title: `${query} Movie Review`, year: '2023', description: `Read reviews and ratings for ${query}` },
+                    { title: `${query} - Cast & Crew`, year: '2023', description: `Meet the cast and crew of ${query}` },
+                    { title: `${query} - Behind the Scenes`, year: '2023', description: `Explore behind the scenes content for ${query}` },
+                    { title: `${query} - Soundtrack`, year: '2023', description: `Listen to the official soundtrack of ${query}` }
+                ];
+                
+                mockGoogleResults.forEach(result => {
+                    results.push({
+                        title: result.title,
+                        year: result.year,
+                        source: 'Google',
+                        description: result.description,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + result.title.split(' - ')[1])}`,
+                        poster: null,
+                        rating: 'Google Search',
+                        genre: 'Various',
+                        type: 'search'
+                    });
+                });
+            }
+            
+            // Simplified YouTube Search - Using a more reliable approach
+            if (currentSource === 'all' || currentSource === 'youtube') {
+                // Create mock results for YouTube since direct scraping is unreliable
+                const mockYouTubeResults = [
+                    { title: `${query} - Official Trailer`, year: '2023', description: `Watch the official trailer for ${query}` },
+                    { title: `${query} - Movie Clips`, year: '2023', description: `Watch clips from ${query}` },
+                    { title: `${query} - Behind the Scenes`, year: '2023', description: `Explore behind the scenes content for ${query}` },
+                    { title: `${query} - Interviews`, year: '2023', description: `Watch interviews with the cast of ${query}` },
+                    { title: `${query} - Full Movie`, year: '2023', description: `Watch the full movie ${query}` }
+                ];
+                
+                mockYouTubeResults.forEach(result => {
+                    results.push({
+                        title: result.title,
+                        year: result.year,
+                        source: 'YouTube',
+                        description: result.description,
+                        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query + ' ' + result.title.split(' - ')[1])}`,
+                        poster: null,
+                        rating: 'Video content',
+                        genre: 'Various',
+                        type: 'video'
+                    });
+                });
+            }
+            
+            // Wikipedia Search - New addition
             if (currentSource === 'all' || currentSource === 'wikipedia') {
                 try {
-                    const wikiResponse = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' film')}&format=json&origin=*`);
-                    const wikiData = await wikiResponse.json();
+                    // Using Wikipedia API
+                    const wikiResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
                     
-                    if (wikiData.query && wikiData.query.search) {
-                        // Get detailed information for top 5 results
-                        for (const result of wikiData.query.search.slice(0, 5)) {
-                            try {
-                                const pageResponse = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&exintro&explaintext&pithumbsize=300&pageids=${result.pageid}&format=json&origin=*`);
-                                const pageData = await pageResponse.json();
-                                const page = pageData.query.pages[result.pageid];
-                                
-                                // Try to extract year from title or snippet
-                                let year = 'No year found';
-                                const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
-                                if (yearMatch) {
-                                    year = yearMatch[0];
-                                }
-                                
-                                results.push({
-                                    title: result.title,
-                                    year: year,
-                                    source: 'Wikipedia',
-                                    description: page.extract ? (page.extract.substring(0, 100) + '...') : (result.snippet.substring(0, 100) + '...'),
-                                    url: `https://en.wikipedia.org/?curid=${result.pageid}`,
-                                    poster: page.thumbnail ? page.thumbnail.source : null,
-                                    rating: 'N/A',
-                                    genre: 'Various',
-                                    type: 'article'
-                                });
-                            } catch (e) {
-                                console.log('Failed to get detailed Wikipedia info for', result.title);
+                    if (wikiResponse.ok) {
+                        const wikiData = await wikiResponse.json();
+                        
+                        // Try to extract year from description
+                        let year = 'No year found';
+                        const yearMatch = wikiData.description.match(/\((\d{4})\)/) || wikiData.extract.match(/\b(\d{4})\b/);
+                        if (yearMatch) {
+                            year = yearMatch[1];
+                        }
+                        
+                        results.push({
+                            title: wikiData.title,
+                            year: year,
+                            source: 'Wikipedia',
+                            description: wikiData.extract ? (wikiData.extract.substring(0, 100) + '...') : 'No description available',
+                            url: wikiData.content_urls.desktop.page,
+                            poster: wikiData.thumbnail ? wikiData.thumbnail.source : null,
+                            rating: 'Wikipedia',
+                            genre: 'Various',
+                            type: 'article'
+                        });
+                    } else {
+                        // If direct page not found, try search
+                        const wikiSearchResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query + ' (film)')}`);
+                        
+                        if (wikiSearchResponse.ok) {
+                            const wikiData = await wikiSearchResponse.json();
+                            
+                            // Try to extract year from description
+                            let year = 'No year found';
+                            const yearMatch = wikiData.description.match(/\((\d{4})\)/) || wikiData.extract.match(/\b(\d{4})\b/);
+                            if (yearMatch) {
+                                year = yearMatch[1];
                             }
+                            
+                            results.push({
+                                title: wikiData.title,
+                                year: year,
+                                source: 'Wikipedia',
+                                description: wikiData.extract ? (wikiData.extract.substring(0, 100) + '...') : 'No description available',
+                                url: wikiData.content_urls.desktop.page,
+                                poster: wikiData.thumbnail ? wikiData.thumbnail.source : null,
+                                rating: 'Wikipedia',
+                                genre: 'Various',
+                                type: 'article'
+                            });
+                        } else {
+                            // Fallback to search page link
+                            results.push({
+                                title: `${query} - Wikipedia Search`,
+                                year: 'Search Wikipedia',
+                                source: 'Wikipedia',
+                                description: `Find comprehensive information about ${query} on Wikipedia`,
+                                url: `https://en.wikipedia.org/wiki/Special:Search/${encodeURIComponent(query)}`,
+                                poster: null,
+                                rating: 'Wikipedia',
+                                genre: 'Various',
+                                type: 'search'
+                            });
                         }
                     }
                 } catch (e) {
-                    console.log('Wikipedia search failed');
+                    console.log('Wikipedia search failed, using fallback');
+                    // Fallback to search page link
+                    results.push({
+                        title: `${query} - Wikipedia Search`,
+                        year: 'Search Wikipedia',
+                        source: 'Wikipedia',
+                        description: `Find comprehensive information about ${query} on Wikipedia`,
+                        url: `https://en.wikipedia.org/wiki/Special:Search/${encodeURIComponent(query)}`,
+                        poster: null,
+                        rating: 'Wikipedia',
+                        genre: 'Various',
+                        type: 'search'
+                    });
                 }
             }
             
@@ -1971,9 +2015,7 @@
                     if (yearFilter.includes('-')) {
                         // Handle decade ranges like "2010-2019"
                         const [start, end] = yearFilter.split('-').map(Number);
-                        if (result.year === 'No year found') return false;
-                        const resultYear = parseInt(result.year);
-                        if (resultYear < start || resultYear > end) {
+                        if (result.year < start || result.year > end) {
                             return false;
                         }
                     } else {
@@ -2005,17 +2047,17 @@
             switch(sortType) {
                 case 'year-desc':
                     return results.sort((a, b) => {
-                        // Handle "No year found" by putting them at the end
-                        if (a.year === 'No year found') return 1;
-                        if (b.year === 'No year found') return -1;
-                        return parseInt(b.year) - parseInt(a.year);
+                        // Handle non-numeric years
+                        const aYear = isNaN(parseInt(a.year)) ? 0 : parseInt(a.year);
+                        const bYear = isNaN(parseInt(b.year)) ? 0 : parseInt(b.year);
+                        return bYear - aYear;
                     });
                 case 'year-asc':
                     return results.sort((a, b) => {
-                        // Handle "No year found" by putting them at the end
-                        if (a.year === 'No year found') return 1;
-                        if (b.year === 'No year found') return -1;
-                        return parseInt(a.year) - parseInt(b.year);
+                        // Handle non-numeric years
+                        const aYear = isNaN(parseInt(a.year)) ? 9999 : parseInt(a.year);
+                        const bYear = isNaN(parseInt(b.year)) ? 9999 : parseInt(b.year);
+                        return aYear - bYear;
                     });
                 case 'rating':
                     return results.sort((a, b) => {
