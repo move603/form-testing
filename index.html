@@ -698,6 +698,7 @@
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
         }
         
         /* Info Panel */
@@ -1320,9 +1321,10 @@
                     </div>
 
                     <button type="submit" class="submit-btn" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i> 
+                        <i class="fas fa-paper-plane"></i>
                         <span>Submit Movie Request</span>
                     </button>
+                    <div id="submitWarning" style="color: #ef4444; margin-top: 0.5rem; display: none;">Please fill out all required fields before submitting.</div>
                 </form>
             </div>
 
@@ -1660,7 +1662,7 @@
                 const originalHTML = submitBtn.innerHTML;
                 
                 // Show loading state with proper design
-                submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
+                submitBtn.innerHTML = '<span class="loading"></span><span>Submitting...</span>';
                 submitBtn.disabled = true;
 
                 // Use Pageclip to submit the form
@@ -1694,6 +1696,7 @@
                 }
             } else {
                 showToast('Validation Error', 'Please fill in all required fields correctly', 'error');
+                document.getElementById('submitWarning').style.display = 'block';
             }
         });
         
@@ -1701,16 +1704,19 @@
         document.getElementById('movieName').addEventListener('input', function() {
             validateField(this, document.getElementById('movieNameError'));
             updateSubmitButton();
+            document.getElementById('submitWarning').style.display = 'none';
         });
 
         document.getElementById('movieLink').addEventListener('input', function() {
             validateURL(this, document.getElementById('movieLinkError'));
             updateSubmitButton();
+            document.getElementById('submitWarning').style.display = 'none';
         });
 
         document.getElementById('email').addEventListener('input', function() {
             validateEmail(this, document.getElementById('emailError'));
             updateSubmitButton();
+            document.getElementById('submitWarning').style.display = 'none';
         });
         
         // Enhanced Movie Search Functionality
@@ -1745,7 +1751,7 @@
             if (query.length > 2) {
                 searchTimeout = setTimeout(() => {
                     performSearch();
-                }, 300); // Reduced from 500ms to 300ms for faster response
+                }, 200); // Reduced from 500ms to 300ms for faster response
             } else if (query.length === 0) {
                 resetSearchResults();
             }
@@ -1826,7 +1832,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.Search) {
-                                data.Search.slice(0, 5).forEach(movie => {
+                                data.Search.slice(0, 3).forEach(movie => {
                                     results.push({
                                         title: movie.Title,
                                         year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
@@ -1852,7 +1858,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.results) {
-                                data.results.slice(0, 5).forEach(movie => {
+                                data.results.slice(0, 3).forEach(movie => {
                                     const releaseYear = movie.release_date ? new Date(movie.release_date).getFullYear() : 'No year found';
                                     results.push({
                                         title: movie.title,
@@ -1879,7 +1885,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.Search) {
-                                data.Search.slice(0, 5).forEach(movie => {
+                                data.Search.slice(0, 3).forEach(movie => {
                                     results.push({
                                         title: movie.Title,
                                         year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
@@ -1905,7 +1911,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.query && data.query.search) {
-                                data.query.search.slice(0, 5).forEach(result => {
+                                data.query.search.slice(0, 3).forEach(result => {
                                     // Try to extract year from title or snippet
                                     let year = 'No year found';
                                     const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
@@ -1938,7 +1944,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.Search) {
-                                data.Search.slice(0, 5).forEach(movie => {
+                                data.Search.slice(0, 3).forEach(movie => {
                                     results.push({
                                         title: `${movie.Title} - Official Trailer`,
                                         year: movie.Year !== 'N/A' ? movie.Year : 'No year found',
@@ -1957,33 +1963,72 @@
                 );
             }
             
-            // Wikipedia Search - Direct Wikipedia API
+            // Wikipedia Search - Enhanced with posters and descriptions
             if (currentSource === 'all' || currentSource === 'wikipedia') {
                 searchPromises.push(
                     fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' film')}&format=json&origin=*`)
                         .then(response => response.json())
-                        .then(data => {
+                        .then(async data => {
                             if (data.query && data.query.search) {
-                                data.query.search.slice(0, 5).forEach(result => {
-                                    // Try to extract year from title or snippet
-                                    let year = 'No year found';
-                                    const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
-                                    if (yearMatch) {
-                                        year = yearMatch[0];
+                                const enhancedResults = await Promise.all(data.query.search.slice(0, 3).map(async result => {
+                                    // Fetch additional details for each result
+                                    try {
+                                        const detailsResponse = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages|extracts&exintro&piprop=thumbnail&pithumbsize=200&titles=${encodeURIComponent(result.title)}&format=json&origin=*`);
+                                        const detailsData = await detailsResponse.json();
+                                        const page = Object.values(detailsData.query.pages)[0];
+                                        
+                                        let poster = null;
+                                        if (page.thumbnail) {
+                                            poster = page.thumbnail.source;
+                                        }
+                                        
+                                        let description = result.snippet.substring(0, 100) + '...';
+                                        if (page.extract) {
+                                            description = page.extract.substring(0, 150) + '...';
+                                        }
+                                        
+                                        // Try to extract year from title, snippet, or extract
+                                        let year = 'No year found';
+                                        const textToSearch = result.title + ' ' + result.snippet + ' ' + (page.extract || '');
+                                        const yearMatch = textToSearch.match(/\b(19|20)\d{2}\b/);
+                                        if (yearMatch) {
+                                            year = yearMatch[0];
+                                        }
+                                        
+                                        return {
+                                            title: result.title,
+                                            year: year,
+                                            source: 'Wikipedia',
+                                            description: description,
+                                            url: `https://en.wikipedia.org/?curid=${result.pageid}`,
+                                            poster: poster,
+                                            rating: 'N/A',
+                                            genre: 'Various',
+                                            type: 'article'
+                                        };
+                                    } catch (e) {
+                                        // Fallback to basic info
+                                        let year = 'No year found';
+                                        const yearMatch = result.snippet.match(/\b(19|20)\d{2}\b/);
+                                        if (yearMatch) {
+                                            year = yearMatch[0];
+                                        }
+                                        
+                                        return {
+                                            title: result.title,
+                                            year: year,
+                                            source: 'Wikipedia',
+                                            description: result.snippet.substring(0, 100) + '...',
+                                            url: `https://en.wikipedia.org/?curid=${result.pageid}`,
+                                            poster: null,
+                                            rating: 'N/A',
+                                            genre: 'Various',
+                                            type: 'article'
+                                        };
                                     }
-                                    
-                                    results.push({
-                                        title: result.title,
-                                        year: year,
-                                        source: 'Wikipedia',
-                                        description: result.snippet.substring(0, 100) + '...',
-                                        url: `https://en.wikipedia.org/?curid=${result.pageid}`,
-                                        poster: null,
-                                        rating: 'N/A',
-                                        genre: 'Various',
-                                        type: 'article'
-                                    });
-                                });
+                                }));
+                                
+                                results.push(...enhancedResults);
                             }
                         })
                         .catch(e => console.log('Wikipedia search failed'))
@@ -2132,12 +2177,17 @@
                     // Auto-fill the form with the selected movie
                     document.getElementById('movieName').value = results[index].title;
                     document.getElementById('movieLink').value = results[index].url;
-                    
+
+                    // Auto-fill release date if available
+                    if (results[index].year && results[index].year !== 'No year found') {
+                        document.getElementById('releaseDate').value = results[index].year + '-01-01';
+                    }
+
                     // Scroll to form
-                    document.querySelector('.form-container').scrollIntoView({ 
-                        behavior: 'smooth' 
+                    document.querySelector('.form-container').scrollIntoView({
+                        behavior: 'smooth'
                     });
-                    
+
                     showToast('Success', 'Movie details filled in the form', 'success');
                 });
             });
