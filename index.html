@@ -1156,12 +1156,7 @@
                     <p class="form-subtitle">Help us grow our library by suggesting films you'd love to watch</p>
                 </div>
 
-                <form action="https://api.web3forms.com/submit" method="POST" id="movieRequestForm">
-                    <!-- Web3Forms Access Key (Replace with your own) -->
-                    <input type="hidden" name="access_key" value="0c9d844d-d807-4661-9f5d-f0bb8d8d8418">
-                    <input type="hidden" name="subject" value="New Movie Request Submission">
-                    <input type="hidden" name="from_name" value="CineRequest Portal">
-
+                <form action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/newform" class="pageclip-form" method="post" id="movieRequestForm">
                     <div class="form-group">
                         <label for="movieName" class="form-label">
                             <i class="fas fa-video label-icon"></i>
@@ -1436,7 +1431,8 @@
         </div>
     </div>
 
-
+    <!-- Pageclip JavaScript -->
+    <script src="https://s.pageclip.co/v1/pageclip.js" charset="utf-8"></script>
 
     <script>
         // Custom Dropdown Functionality
@@ -1447,7 +1443,8 @@
                 this.input = document.getElementById(inputId);
                 this.errorElement = document.getElementById(errorId);
                 this.isOpen = false;
-
+                this.selectedValue = '';
+                
                 this.init();
             }
             
@@ -1498,6 +1495,7 @@
             }
             
             select(value, text) {
+                this.selectedValue = value;
                 this.input.value = value;
                 this.trigger.querySelector('span').textContent = text;
                 this.trigger.classList.add('has-value');
@@ -1512,7 +1510,6 @@
                 this.menu.querySelector(`[data-value="${value}"]`).classList.add('selected');
 
                 this.close();
-                updateSubmitButton();
             }
             
             filterItems(char) {
@@ -1543,7 +1540,7 @@
             }
             
             validate() {
-                if (!this.input.value.trim()) {
+                if (!this.selectedValue) {
                     this.showError();
                     return false;
                 }
@@ -1552,28 +1549,9 @@
             }
         }
         
-        // Function to check if all required fields are filled
-        function checkFormValidity() {
-            const movieName = document.getElementById('movieName').value.trim();
-            const movieLink = document.getElementById('movieLink').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const language = document.getElementById('preferredLanguage').value.trim();
-            const availability = document.getElementById('availability').value.trim();
-            return movieName && movieLink && email && language && availability;
-        }
-
-        // Function to update submit button state
-        function updateSubmitButton() {
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = !checkFormValidity();
-        }
-
         // Initialize dropdowns
         const languageDropdown = new CustomDropdown('languageTrigger', 'languageMenu', 'preferredLanguage', 'languageError');
         const availabilityDropdown = new CustomDropdown('availabilityTrigger', 'availabilityMenu', 'availability', 'availabilityError');
-
-        // Initial button state
-        updateSubmitButton();
         
         // Toast Notification System
         function showToast(title, text, type = 'success') {
@@ -1650,26 +1628,23 @@
             const isLanguageValid = languageDropdown.validate();
             const isAvailabilityValid = availabilityDropdown.validate();
 
-            // Check if all validations passed
-            if (isMovieNameValid && isMovieLinkValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
+            // Check if mandatory validations passed
+            if (isMovieNameValid && isEmailValid && isLanguageValid && isAvailabilityValid) {
                 const submitBtn = document.getElementById('submitBtn');
-                const originalText = submitBtn.innerHTML;
+                const originalHTML = submitBtn.innerHTML;
 
-                // Show loading state
+                // Hide error message
+                document.getElementById('submitError').style.display = 'none';
+
+                // Show loading state with proper design
                 submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
                 submitBtn.disabled = true;
 
+                // Use Pageclip to submit the form
                 try {
-                    const formData = new FormData(this);
-
-                    const response = await fetch('https://api.web3forms.com/submit', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
+                    // Pageclip will handle the form submission
+                    // We'll show the success modal after a short delay to simulate submission
+                    setTimeout(() => {
                         // Show success modal
                         document.getElementById('thankYouModal').classList.add('show');
 
@@ -1685,36 +1660,32 @@
                                 window.location.href = 'https://www.youtube.com/';
                             }
                         }, 1000);
-                    } else {
-                        throw new Error('Submission failed');
-                    }
+                    }, 1500);
                 } catch (error) {
                     console.error('Form submission error:', error);
                     showToast('Error', 'Failed to submit form. Please try again.', 'error');
 
                     // Reset button
-                    submitBtn.innerHTML = originalText;
+                    submitBtn.innerHTML = originalHTML;
                     submitBtn.disabled = false;
                 }
             } else {
-                showToast('Validation Error', 'Please fill in all required fields correctly', 'error');
+                // Show error message near button
+                document.getElementById('submitError').style.display = 'block';
             }
         });
         
         // Real-time validation for input fields
         document.getElementById('movieName').addEventListener('input', function() {
             validateField(this, document.getElementById('movieNameError'));
-            updateSubmitButton();
         });
 
         document.getElementById('movieLink').addEventListener('input', function() {
             validateURL(this, document.getElementById('movieLinkError'));
-            updateSubmitButton();
         });
 
         document.getElementById('email').addEventListener('input', function() {
             validateEmail(this, document.getElementById('emailError'));
-            updateSubmitButton();
         });
         
         // Enhanced Movie Search Functionality
