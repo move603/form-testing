@@ -1491,17 +1491,18 @@
                 this.input.value = value;
                 this.trigger.querySelector('span').textContent = text;
                 this.trigger.classList.add('has-value');
-                
+
                 // Clear error state when a value is selected
                 this.clearError();
-                
+
                 // Update selected state
                 this.menu.querySelectorAll('.dropdown-item').forEach(item => {
                     item.classList.remove('selected');
                 });
                 this.menu.querySelector(`[data-value="${value}"]`).classList.add('selected');
-                
+
                 this.close();
+                updateSubmitButton();
             }
             
             filterItems(char) {
@@ -1541,9 +1542,42 @@
             }
         }
         
+        // Field validation functions without showing errors
+        function isFieldValid(field, type) {
+            if (type === 'text') return field.value.trim() !== '';
+            if (type === 'url') {
+                if (!field.value.trim()) return false;
+                try { new URL(field.value); return true; } catch { return false; }
+            }
+            if (type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return field.value.trim() && emailRegex.test(field.value.trim());
+            }
+            if (type === 'dropdown') return field.value.trim() !== '';
+        }
+
+        // Check if all form fields are valid
+        function checkFormValidity() {
+            const movieName = document.getElementById('movieName');
+            const movieLink = document.getElementById('movieLink');
+            const email = document.getElementById('email');
+            const language = document.getElementById('preferredLanguage');
+            const availability = document.getElementById('availability');
+            return isFieldValid(movieName, 'text') && isFieldValid(movieLink, 'url') && isFieldValid(email, 'email') && isFieldValid(language, 'dropdown') && isFieldValid(availability, 'dropdown');
+        }
+
+        // Update submit button state
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = !checkFormValidity();
+        }
+
         // Initialize dropdowns
         const languageDropdown = new CustomDropdown('languageTrigger', 'languageMenu', 'preferredLanguage', 'languageError');
         const availabilityDropdown = new CustomDropdown('availabilityTrigger', 'availabilityMenu', 'availability', 'availabilityError');
+
+        // Initial button state
+        updateSubmitButton();
         
         // Toast Notification System
         function showToast(title, text, type = 'success') {
@@ -1666,14 +1700,17 @@
         // Real-time validation for input fields
         document.getElementById('movieName').addEventListener('input', function() {
             validateField(this, document.getElementById('movieNameError'));
+            updateSubmitButton();
         });
 
         document.getElementById('movieLink').addEventListener('input', function() {
             validateURL(this, document.getElementById('movieLinkError'));
+            updateSubmitButton();
         });
 
         document.getElementById('email').addEventListener('input', function() {
             validateEmail(this, document.getElementById('emailError'));
+            updateSubmitButton();
         });
         
         // Enhanced Movie Search Functionality
