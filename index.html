@@ -1,70 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Contact Us</title>
-  <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Form</title>
+  <link rel="stylesheet" href="https://s.pageclip.co/v1/pageclip.css" media="screen" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #eef2f3;
-      padding: 40px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f8fa;
+      margin: 0;
+      padding: 50px;
     }
-    .form-container {
+    .container {
       max-width: 500px;
       margin: auto;
-      background: #fff;
+      background: white;
       padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     }
     h2 {
       text-align: center;
       color: #333;
     }
     label {
-      display: block;
-      margin-top: 15px;
       font-weight: bold;
+      margin-top: 15px;
+      display: block;
     }
     input, textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-top: 5px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
+      font-size: 16px;
     }
     button {
-      margin-top: 20px;
-      background-color: #28a745;
+      background: #28a745;
       color: white;
-      border: none;
+      font-size: 16px;
       padding: 12px;
       width: 100%;
-      font-size: 16px;
-      border-radius: 4px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #218838;
+      background: #218838;
+    }
+    .pageclip-form__status {
+      margin-top: 15px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-
-  <div class="form-container">
+  <div class="container">
     <h2>Contact Us</h2>
-    <form 
-      action="https://send.pageclip.co/api_GrghtkA8DDiDuzoxSunk5QN095HpcZin/contact" 
-      class="pageclip-form" 
+    <form
+      action="https://send.pageclip.co/CMqDFFZAeauKghB8ripn3ej1LokMWVbO/d/contact"
       method="post"
+      class="pageclip-form"
     >
       <label for="name">Name</label>
-      <input type="text" name="name" required>
+      <input type="text" name="name" required />
 
       <label for="email">Email</label>
-      <input type="email" name="email" required>
+      <input type="email" name="email" required />
 
       <label for="message">Message</label>
       <textarea name="message" required></textarea>
@@ -72,6 +77,8 @@
       <button type="submit" class="pageclip-form__submit">
         <span>Send Message</span>
       </button>
+
+      <div class="pageclip-form__status"></div>
     </form>
   </div>
 
